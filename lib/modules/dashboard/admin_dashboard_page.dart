@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../shared/widgets/global_app_bar.dart';
 
 class AdminDashboardPage extends StatelessWidget {
   const AdminDashboardPage({super.key});
@@ -6,11 +7,14 @@ class AdminDashboardPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Panel Administrador'),
+      appBar: const GlobalAppBar(
+        title: 'Panel Administrador',
       ),
       body: const Center(
-        child: Text('Bienvenido Administrador'),
+        child: Text(
+          'Bienvenido Administrador',
+          style: TextStyle(fontSize: 20),
+        ),
       ),
     );
   }

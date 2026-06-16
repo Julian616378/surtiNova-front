@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:surti_nova/shared/widgets/global_app_bar.dart';
 
 class AsesorDashboardPage extends StatelessWidget {
   const AsesorDashboardPage({super.key});
@@ -6,8 +7,8 @@ class AsesorDashboardPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Panel Asesor'),
+      appBar: const GlobalAppBar(
+        title: 'Panel Asesor',
       ),
       body: const Center(
         child: Text('Bienvenido Asesor'),
