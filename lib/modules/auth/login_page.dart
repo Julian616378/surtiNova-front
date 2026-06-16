@@ -33,9 +33,29 @@ class _LoginPageState extends State<LoginPage> {
       });
 
       final token = response.data['token'] as String;
-      await StorageService.saveToken(token);
+final rol = response.data['usuario']['rol'] as String;
 
-      if (mounted) Navigator.pushReplacementNamed(context, '/dashboard');
+await StorageService.saveToken(token);
+await StorageService.saveRole(rol);
+
+if (!mounted) return;
+
+switch (rol.toLowerCase()) {
+  case 'admin':
+    Navigator.pushReplacementNamed(context, '/admin-dashboard');
+    break;
+
+  case 'asesor':
+    Navigator.pushReplacementNamed(context, '/asesor-dashboard');
+    break;
+
+  case 'cliente':
+    Navigator.pushReplacementNamed(context, '/cliente-dashboard');
+    break;
+
+  default:
+    Navigator.pushReplacementNamed(context, '/login');
+}
     } on DioException catch (e) {
       setState(() {
         _error = e.response?.data['message'] ?? 'Error de conexión';
