@@ -28,7 +28,7 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       final response = await ApiService.post(ApiConstants.login, {
-        'email':    _emailCtrl.text.trim(),
+        'correo':    _emailCtrl.text.trim(),
         'password': _passCtrl.text,
       });
 
