@@ -1,6 +1,8 @@
 class ApiCliente {
-  //CATALOGO
+  // CATÁLOGO
   static const String productos = '/productos';
   static const String productosCriticos = '/productos/criticos';
-static const String pedidos = 'tienda/pedidos';
+
+  // PEDIDOS
+  static const String pedidos = '/tienda/pedidos';
 }
