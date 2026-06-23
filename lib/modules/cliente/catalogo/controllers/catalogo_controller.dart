@@ -4,12 +4,14 @@ import '../services/producto_service.dart';
 class CatalogoController {
   final ProductoService _service = ProductoService();
 
-  Future<List<Producto>> obtenerProductos() async {
-    final response =
-        await _service.obtenerProductos();
+  Future<List<Producto>> obtenerProductos({
+    String buscar = '',
+  }) async {
+    final response = await _service.obtenerProductos(
+      buscar: buscar,
+    );
 
-    final List productos =
-        response['data'] ?? [];
+    final List productos = response['data'] ?? [];
 
     return productos
         .map(

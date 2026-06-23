@@ -2,6 +2,7 @@ import '../../catalogo/models/producto.dart';
 
 class CarritoItem {
   final Producto producto;
+
   int cantidad;
 
   CarritoItem({
@@ -9,7 +10,9 @@ class CarritoItem {
     this.cantidad = 1,
   });
 
-  double get subtotal => producto.precio * cantidad;
+  double get precioUnitario => producto.precio;
+
+  double get subtotal => precioUnitario * cantidad;
 
   void aumentarCantidad() {
     cantidad++;
@@ -18,6 +21,12 @@ class CarritoItem {
   void disminuirCantidad() {
     if (cantidad > 1) {
       cantidad--;
+    }
+  }
+
+  void cambiarCantidad(int nuevaCantidad) {
+    if (nuevaCantidad > 0) {
+      cantidad = nuevaCantidad;
     }
   }
 
@@ -36,8 +45,11 @@ class CarritoItem {
       producto: Producto(
         id: json["id_producto"],
         nombre: json["nombre"],
-        descripcion: "",
-        precio: double.parse(json["precio"].toString()),
+        descripcion: json["descripcion"] ?? "",
+        precio: double.tryParse(
+              json["precio"].toString(),
+            ) ??
+            0,
       ),
       cantidad: json["cantidad"] ?? 1,
     );
