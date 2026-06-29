@@ -26,6 +26,9 @@ class ApiService {
   static Future<Response> post(String path, Map<String, dynamic> data) =>
       _dio.post(path, data: data);
 
+static Future<Response> patch(String path, Map<String, dynamic> data) =>
+    _dio.patch(path, data: data);
+    
   static Future<Response> get(String path) => _dio.get(path);
 
   static Future<Response> put(String path, Map<String, dynamic> data) =>

@@ -16,16 +16,39 @@ class _SplashPageState extends State<SplashPage> {
     _checkSession();
   }
 
-  Future<void> _checkSession() async {
-    await Future.delayed(const Duration(seconds: 2));
-    final hasToken = await StorageService.hasToken();
-    if (mounted) {
-      Navigator.pushReplacementNamed(
-        context,
-        hasToken ? '/dashboard' : '/login',
-      );
-    }
+ Future<void> _checkSession() async {
+  await Future.delayed(const Duration(seconds: 2));
+  
+  final hasToken = await StorageService.hasToken();
+  
+  if (!mounted) return;
+  
+  if (!hasToken) {
+    Navigator.pushReplacementNamed(context, '/login');
+    return;
   }
+
+  // ✅ Leer el rol guardado para ir al dashboard correcto
+  final rol = await StorageService.getRole();
+  
+  if (!mounted) return;
+  
+  switch (rol?.toLowerCase()) {
+    case 'admin':
+      Navigator.pushReplacementNamed(context, '/admin-dashboard');
+      break;
+    case 'asesor':
+      Navigator.pushReplacementNamed(context, '/asesor-dashboard');
+      break;
+    case 'cliente':
+      Navigator.pushReplacementNamed(context, '/cliente-dashboard');
+      break;
+    default:
+      // Si el rol no se reconoce, limpiar sesión y volver al login
+      await StorageService.clearSession();
+      Navigator.pushReplacementNamed(context, '/login');
+  }
+}
 
   @override
   Widget build(BuildContext context) {
