@@ -6,7 +6,7 @@ import '../../core/constants/api_constants.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/theme/app_dimensions.dart';
-
+import 'package:surti_nova/modules/cliente/catalogo/views/catalogo_view.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -51,11 +51,19 @@ switch (rol.toLowerCase()) {
     break;
 
   case 'cliente':
-    Navigator.pushReplacementNamed(context, '/cliente-dashboard');
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => CatalogoView(
+          token: token,
+        ),
+      ),
+    );
     break;
 
   default:
     Navigator.pushReplacementNamed(context, '/login');
+
 }
     } on DioException catch (e) {
       setState(() {

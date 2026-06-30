@@ -1,187 +1,74 @@
 import 'package:flutter/material.dart';
-import '../models/producto.dart';
-import '../views/detalle_producto_page.dart';
-import '../../carrito/controllers/carrito_controller.dart';
+import '../models/producto_model.dart';
+import '../../shared/theme/app_theme.dart';
 
 class ProductoCard extends StatelessWidget {
-  final Producto producto;
+  final ProductoModel producto;
+  final VoidCallback  onTap;
+  final VoidCallback  onAgregar;
 
-  const ProductoCard({
-    super.key,
-    required this.producto,
-  });
+  const ProductoCard({super.key, required this.producto, required this.onTap, required this.onAgregar});
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 4,
-      margin: const EdgeInsets.symmetric(
-        horizontal: 12,
-        vertical: 8,
-      ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: Padding(
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 6, offset: const Offset(0,2))]),
+        child: Row(
           children: [
-            Container(
-              height: 150,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade200,
-                borderRadius:
-                    BorderRadius.circular(10),
-              ),
-              child: const Icon(
-                Icons.inventory_2,
-                size: 70,
-                color: Colors.grey,
-              ),
+            // Imagen
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: producto.imagen != null
+                ? Image.network(producto.imagen!, width: 72, height: 72, fit: BoxFit.cover,
+                    errorBuilder: (_,__,___) => _placeholder())
+                : _placeholder(),
             ),
-
-            const SizedBox(height: 12),
-
-            Text(
-              producto.nombre,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-
-            const SizedBox(height: 6),
-
-            Text(
-              producto.descripcion,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-
-            const SizedBox(height: 10),
-
-            Text(
-              '\$${producto.precio.toStringAsFixed(0)}',
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.green,
+            const SizedBox(width: 12),
+            // Info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(producto.nombre, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: AppTheme.textDark)),
+                  if (producto.descripcion != null) ...[
+                    const SizedBox(height: 2),
+                    Text(producto.descripcion!, style: const TextStyle(fontSize: 12, color: AppTheme.textGrey), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  ],
+                  const SizedBox(height: 6),
+                  Text('\$${producto.precio.toStringAsFixed(2)}',
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.priceOrange)),
+                  const SizedBox(height: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(color: AppTheme.stockGreen.withOpacity(0.12), borderRadius: BorderRadius.circular(20)),
+                    child: Text(producto.enStock ? 'En stock' : 'Sin stock',
+                      style: TextStyle(fontSize: 11, color: producto.enStock ? AppTheme.stockGreen : Colors.red, fontWeight: FontWeight.w500)),
+                  ),
+                ],
               ),
             ),
-
-            const SizedBox(height: 12),
-
-            Row(
-              mainAxisAlignment:
-                  MainAxisAlignment.spaceAround,
-              children: [
-                IconButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) =>
-                            DetalleProductoPage(
-                          producto: producto,
-                        ),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.visibility),
-                  tooltip: 'Ver detalle',
-                ),
-
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(
-                    Icons.favorite_border,
-                  ),
-                  tooltip: 'Favorito',
-                ),
-
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.share),
-                  tooltip: 'Compartir',
-                ),
-
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(
-                    Icons.local_offer,
-                  ),
-                  tooltip: 'Oferta',
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 10),
-
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      CarritoController
-                          .agregarProducto(
-                        producto,
-                      );
-
-                      ScaffoldMessenger.of(
-                        context,
-                      ).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            '${producto.nombre} agregado al carrito',
-                          ),
-                        ),
-                      );
-                    },
-                    icon: const Icon(
-                      Icons.shopping_cart,
-                    ),
-                    label: const Text(
-                      'Agregar',
-                    ),
-                  ),
-                ),
-
-                const SizedBox(width: 10),
-
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      CarritoController
-                          .agregarProducto(
-                        producto,
-                      );
-
-                      ScaffoldMessenger.of(
-                        context,
-                      ).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Producto agregado. Ve al carrito para finalizar el pedido.',
-                          ),
-                        ),
-                      );
-                    },
-                    icon: const Icon(
-                      Icons.flash_on,
-                    ),
-                    label: const Text(
-                      'Comprar',
-                    ),
-                  ),
-                ),
-              ],
+            // Botón +
+            GestureDetector(
+              onTap: producto.enStock ? onAgregar : null,
+              child: Container(
+                width: 38, height: 38,
+                decoration: BoxDecoration(color: producto.enStock ? AppTheme.primary : Colors.grey[300], shape: BoxShape.circle),
+                child: const Icon(Icons.add, color: Colors.white, size: 22),
+              ),
             ),
           ],
         ),
       ),
     );
   }
+
+  Widget _placeholder() => Container(
+    width: 72, height: 72, color: const Color(0xFFF0F0F0),
+    child: const Icon(Icons.image, color: Colors.grey, size: 32),
+  );
 }
