@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/services/storage_service.dart';
 import '../../core/theme/app_colors.dart';
+import '../cliente/catalogo/views/catalogo_view.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -16,39 +17,16 @@ class _SplashPageState extends State<SplashPage> {
     _checkSession();
   }
 
- Future<void> _checkSession() async {
-  await Future.delayed(const Duration(seconds: 2));
-  
-  final hasToken = await StorageService.hasToken();
-  
-  if (!mounted) return;
-  
-  if (!hasToken) {
-    Navigator.pushReplacementNamed(context, '/login');
-    return;
+  Future<void> _checkSession() async {
+    await Future.delayed(const Duration(seconds: 2));
+    final hasToken = await StorageService.hasToken();
+    if (mounted) {
+      Navigator.pushReplacementNamed(
+        context,
+        hasToken ? '/dashboard' : '/login',
+      );
+    }
   }
-
-  // ✅ Leer el rol guardado para ir al dashboard correcto
-  final rol = await StorageService.getRole();
-  
-  if (!mounted) return;
-  
-  switch (rol?.toLowerCase()) {
-    case 'admin':
-      Navigator.pushReplacementNamed(context, '/admin-dashboard');
-      break;
-    case 'asesor':
-      Navigator.pushReplacementNamed(context, '/asesor-dashboard');
-      break;
-    case 'cliente':
-      Navigator.pushReplacementNamed(context, '/cliente-dashboard');
-      break;
-    default:
-      // Si el rol no se reconoce, limpiar sesión y volver al login
-      await StorageService.clearSession();
-      Navigator.pushReplacementNamed(context, '/login');
-  }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +36,11 @@ class _SplashPageState extends State<SplashPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.storefront_rounded, size: 80, color: Colors.white),
+            Icon(
+              Icons.storefront_rounded,
+              size: 80,
+              color: Colors.white,
+            ),
             SizedBox(height: 16),
             Text(
               'Surti Nova',
@@ -70,7 +52,9 @@ class _SplashPageState extends State<SplashPage> {
               ),
             ),
             SizedBox(height: 40),
-            CircularProgressIndicator(color: Colors.white54),
+            CircularProgressIndicator(
+              color: Colors.white54,
+            ),
           ],
         ),
       ),
