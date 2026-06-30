@@ -17,7 +17,7 @@ class _AsesorDashboardPageState extends State<AsesorDashboardPage> {
 
   final List<Widget> _pages = const [
     CarteraPage(),
-    VisitasPage(),
+    VisitarPage(),
     MuestrasPage(),
     ComisionesPage(),
   ];

@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Surti Nova',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.light,
+      theme: AppTheme.theme,
       initialRoute: '/',
       routes: {
         '/': (_) => const SplashPage(),
