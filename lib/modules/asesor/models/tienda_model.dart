@@ -1,60 +1,60 @@
 class TiendaModel {
   final int id;
-  final String? razonSocial;
+  final String? nombre;
   final String? nit;
   final String? propietario;
-  final String? nombreEstablecimiento;
-  final String? nombrePropietario;
   final String? telefono;
-  final String? email;
+  final String? correo;
   final String? direccion;
-  final String? barrio;
-  final String? ciudad;
-  final String? estado;
   final double? latitud;
   final double? longitud;
-  final String? observaciones;
+  final String estado;
+  final int idAsesor;
+
+  String get displayName => (nombre?.isNotEmpty == true) ? nombre! : 'Sin nombre';
+  String get displayPropietario => propietario ?? '—';
+  String get email => correo ?? '';
 
   TiendaModel({
     required this.id,
-    this.razonSocial,
+    this.nombre,
     this.nit,
     this.propietario,
-    this.nombreEstablecimiento,
-    this.nombrePropietario,
     this.telefono,
-    this.email,
+    this.correo,
     this.direccion,
-    this.barrio,
-    this.ciudad,
-    this.estado,
     this.latitud,
     this.longitud,
-    this.observaciones,
+    this.estado = 'prospecto',
+    required this.idAsesor,
   });
 
-  // Nombre para mostrar — soporta tanto tienda formal como prospecto
-  String get displayName =>
-      razonSocial ?? nombreEstablecimiento ?? 'Tienda #$id';
+  static double? _parseDouble(dynamic value) {
+    if (value == null) return null;
+    return double.tryParse(value.toString());
+  }
 
-  String get displayPropietario =>
-      propietario ?? nombrePropietario ?? '—';
+  factory TiendaModel.fromJson(Map<String, dynamic> json) {
+    return TiendaModel(
+      id:          json['id'] ?? 0,
+      nombre:      json['nombre'] as String?,
+      nit:         json['nit'] as String?,
+      propietario: json['propietario'] as String?,
+      telefono:    json['telefono'] as String?,
+      correo:      json['correo'] as String?,
+      direccion:   json['direccion'] as String?,
+      latitud:     _parseDouble(json['latitud']),
+      longitud:    _parseDouble(json['longitud']),
+      estado:      json['estado'] as String? ?? 'prospecto',
+      idAsesor:    json['id_asesor'] ?? 0,
+    );
+  }
 
-  factory TiendaModel.fromJson(Map<String, dynamic> j) => TiendaModel(
-        id:                   j['id'],
-        razonSocial:          j['razon_social'],
-        nit:                  j['nit'],
-        propietario:          j['propietario'],
-        nombreEstablecimiento: j['nombre_establecimiento'],
-        nombrePropietario:    j['nombre_propietario'],
-        telefono:             j['telefono'],
-        email:                j['email'],
-        direccion:            j['direccion'],
-        barrio:               j['barrio'],
-        ciudad:               j['ciudad'],
-        estado:               j['estado'],
-        latitud:              (j['latitud'] as num?)?.toDouble(),
-        longitud:             (j['longitud'] as num?)?.toDouble(),
-        observaciones:        j['observaciones'],
-      );
+  Map<String, dynamic> toJson() => {
+    'id': id, 'nombre': nombre, 'nit': nit,
+    'propietario': propietario, 'telefono': telefono,
+    'correo': correo, 'direccion': direccion,
+    'latitud': latitud, 'longitud': longitud,
+    'estado': estado, 'id_asesor': idAsesor,
+  };
 }
