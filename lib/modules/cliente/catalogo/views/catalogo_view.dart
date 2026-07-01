@@ -5,10 +5,13 @@ import '../models/producto_model.dart';
 import '../services/catalogo_service.dart';
 import '../widgets/producto_card.dart';
 import '../../shared/theme/app_theme.dart';
+import '../widgets/carrito_fab.dart';
+import '../../pedido/views/carrito_view.dart';
 
 class CatalogoView extends StatefulWidget {
   final String token;
-  const CatalogoView({super.key, required this.token});
+  final int idTienda;
+  const CatalogoView({super.key, required this.token, required this.idTienda});
 
   @override
   State<CatalogoView> createState() => _CatalogoViewState();
@@ -62,6 +65,15 @@ class _CatalogoViewState extends State<CatalogoView> {
               Expanded(child: _buildLista(ctrl)),
             ],
           ),
+          floatingActionButton: CarritoFab(
+            totalItems: ctrl.totalCarrito,
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => CarritoView(token: widget.token, idTienda: widget.idTienda, carritoCtrl: ctrl),
+              ),
+            ),
+          ),
           bottomNavigationBar: _buildNavBar(),
         ),
       ),
@@ -82,8 +94,6 @@ class _CatalogoViewState extends State<CatalogoView> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Icon(Icons.menu, color: Colors.white, size: 26),
-
-              // LOGO
               Row(children: const [
                 Icon(Icons.shopping_cart, color: Colors.white, size: 18),
                 SizedBox(width: 6),
@@ -92,8 +102,6 @@ class _CatalogoViewState extends State<CatalogoView> {
                   TextSpan(text: 'Nova', style: TextStyle(color: Colors.white70, fontSize: 18, fontWeight: FontWeight.w300)),
                 ])),
               ]),
-
-              // Carrito con badge
               Stack(
                 clipBehavior: Clip.none,
                 children: [
@@ -114,7 +122,6 @@ class _CatalogoViewState extends State<CatalogoView> {
               ),
             ],
           ),
-
           const SizedBox(height: 14),
           const Row(children: [
             Text('¡Hola, Cliente! ', style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
@@ -122,7 +129,6 @@ class _CatalogoViewState extends State<CatalogoView> {
           ]),
           const Text('Descubre nuestros productos', style: TextStyle(color: Colors.white70, fontSize: 13)),
           const SizedBox(height: 14),
-
           Row(children: [
             Expanded(
               child: Container(
@@ -140,21 +146,6 @@ class _CatalogoViewState extends State<CatalogoView> {
                   ),
                 ),
               ),
-            ),
-            const SizedBox(width: 10),
-            Container(
-              height: 44,
-              padding: const EdgeInsets.symmetric(horizontal: 14),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.white54),
-              ),
-              child: const Row(children: [
-                Icon(Icons.tune, color: Colors.white, size: 18),
-                SizedBox(width: 4),
-                Text('Filtrar', style: TextStyle(color: Colors.white, fontSize: 13)),
-              ]),
             ),
           ]),
         ],
@@ -284,11 +275,11 @@ class _CatalogoViewState extends State<CatalogoView> {
       backgroundColor: Colors.white,
       elevation: 10,
       items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.home_outlined),        activeIcon: Icon(Icons.home),          label: 'Inicio'),
-        BottomNavigationBarItem(icon: Icon(Icons.grid_view_outlined),   activeIcon: Icon(Icons.grid_view),     label: 'Catálogo'),
-        BottomNavigationBarItem(icon: Icon(Icons.favorite_outline),     activeIcon: Icon(Icons.favorite),      label: 'Favoritos'),
-        BottomNavigationBarItem(icon: Icon(Icons.receipt_long_outlined),activeIcon: Icon(Icons.receipt_long),  label: 'Pedidos'),
-        BottomNavigationBarItem(icon: Icon(Icons.person_outline),       activeIcon: Icon(Icons.person),        label: 'Perfil'),
+        BottomNavigationBarItem(icon: Icon(Icons.home_outlined),         activeIcon: Icon(Icons.home),          label: 'Inicio'),
+        BottomNavigationBarItem(icon: Icon(Icons.grid_view_outlined),    activeIcon: Icon(Icons.grid_view),     label: 'Catálogo'),
+        BottomNavigationBarItem(icon: Icon(Icons.favorite_outline),      activeIcon: Icon(Icons.favorite),      label: 'Favoritos'),
+        BottomNavigationBarItem(icon: Icon(Icons.receipt_long_outlined), activeIcon: Icon(Icons.receipt_long),  label: 'Pedidos'),
+        BottomNavigationBarItem(icon: Icon(Icons.person_outline),        activeIcon: Icon(Icons.person),        label: 'Perfil'),
       ],
     );
   }
@@ -324,11 +315,15 @@ class _ProductoSheetState extends State<_ProductoSheet> {
     _futureProducto = CatalogoService().getProductoDetalle(widget.token, widget.productoId);
   }
 
+  // FIX: guarda el contexto del Navigator padre ANTES de hacer pop
+  // para poder usarlo en el Future.delayed sin que el contexto esté desmontado.
   void _reabrirSheet(int productoId) {
-    Navigator.pop(context);
+    final nav = Navigator.of(context);
+    final parentContext = context;
+    nav.pop();
     Future.delayed(const Duration(milliseconds: 250), () {
       showModalBottomSheet(
-        context: context,
+        context: parentContext,
         isScrollControlled: true,
         backgroundColor: Colors.transparent,
         builder: (_) => _ProductoSheet(
@@ -340,32 +335,50 @@ class _ProductoSheetState extends State<_ProductoSheet> {
     });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return DraggableScrollableSheet(
-      initialChildSize: 0.88,
-      minChildSize: 0.5,
-      maxChildSize: 0.95,
-      builder: (_, scrollCtrl) => Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+@override
+Widget build(BuildContext context) {
+  return DraggableScrollableSheet(
+    initialChildSize: 0.88,
+    minChildSize: 0.5,
+    maxChildSize: 0.95,
+    expand: true,
+    builder: (_, scrollCtrl) {
+      return SizedBox.expand(
+        child: Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(
+              top: Radius.circular(20),
+            ),
+          ),
+          child: FutureBuilder<ProductoModel?>(
+            future: _futureProducto,
+            builder: (_, snap) {
+              if (snap.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: CircularProgressIndicator(
+                    color: AppTheme.primary,
+                  ),
+                );
+              }
+
+              if (!snap.hasData || snap.data == null) {
+                return const Center(
+                  child: Text('No se pudo cargar el producto'),
+                );
+              }
+
+              return _buildContenido(
+                snap.data!,
+                scrollCtrl,
+              );
+            },
+          ),
         ),
-        child: FutureBuilder<ProductoModel?>(
-          future: _futureProducto,
-          builder: (_, snap) {
-            if (snap.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator(color: AppTheme.primary));
-            }
-            if (!snap.hasData || snap.data == null) {
-              return const Center(child: Text('No se pudo cargar el producto'));
-            }
-            return _buildContenido(snap.data!, scrollCtrl);
-          },
-        ),
-      ),
-    );
-  }
+      );
+    },
+  );
+}
 
   Widget _buildContenido(ProductoModel p, ScrollController scrollCtrl) {
     final relacionados = widget.ctrl.productos
@@ -375,7 +388,6 @@ class _ProductoSheetState extends State<_ProductoSheet> {
 
     return Stack(
       children: [
-        // ── Contenido scrolleable ──────────────────────────────────────────
         ListView(
           controller: scrollCtrl,
           padding: const EdgeInsets.only(bottom: 120),
@@ -405,22 +417,20 @@ class _ProductoSheetState extends State<_ProductoSheet> {
               ),
             ),
 
-            // Imagen + nombre/precio/stock
+            // Imagen + info
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Imagen
                   ClipRRect(
                     borderRadius: BorderRadius.circular(12),
                     child: p.imagen != null
                         ? Image.network(p.imagen!, width: 120, height: 120, fit: BoxFit.contain,
-                            errorBuilder: (_,__,___) => _placeholder())
+                            errorBuilder: (_, __, ___) => _placeholder())
                         : _placeholder(),
                   ),
                   const SizedBox(width: 16),
-                  // Info
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -522,7 +532,7 @@ class _ProductoSheetState extends State<_ProductoSheet> {
                             borderRadius: BorderRadius.circular(10),
                             child: r.imagen != null
                                 ? Image.network(r.imagen!, height: 65, fit: BoxFit.cover,
-                                    errorBuilder: (_,__,___) => _placeholder(w: 65, h: 65))
+                                    errorBuilder: (_, __, ___) => _placeholder(w: 65, h: 65))
                                 : _placeholder(w: 65, h: 65),
                           ),
                           const SizedBox(height: 4),
@@ -532,12 +542,16 @@ class _ProductoSheetState extends State<_ProductoSheet> {
                           Text('\$${r.precio.toStringAsFixed(2)}',
                             style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppTheme.primary)),
                           const SizedBox(height: 4),
+                          // FIX: agrega al carrito sin usar context después de pop
                           GestureDetector(
                             onTap: () {
                               widget.ctrl.agregarAlCarrito(r.id);
+                              if (!mounted) return;
                               ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                                 content: Text('${r.nombre} agregado'),
                                 backgroundColor: AppTheme.primary,
+                                behavior: SnackBarBehavior.floating,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                 duration: const Duration(seconds: 1),
                               ));
                             },
@@ -557,7 +571,7 @@ class _ProductoSheetState extends State<_ProductoSheet> {
           ],
         ),
 
-        // ── Botón fijo abajo ───────────────────────────────────────────────
+        // ── Botón fijo abajo ──────────────────────────────────────────────
         Positioned(
           bottom: 0, left: 0, right: 0,
           child: Container(
@@ -573,12 +587,18 @@ class _ProductoSheetState extends State<_ProductoSheet> {
                   width: double.infinity,
                   height: 52,
                   child: ElevatedButton(
+                    // FIX: guarda messenger y nav ANTES del pop para no usar context desmontado
                     onPressed: p.enStock ? () {
+                      final messenger = ScaffoldMessenger.of(context);
+                      final nombre = p.nombre;
+                      final precio = p.precio;
                       widget.ctrl.agregarAlCarrito(p.id, cantidad: _cantidad);
                       Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text('${p.nombre} agregado al carrito'),
+                      messenger.showSnackBar(SnackBar(
+                        content: Text('$nombre agregado al carrito'),
                         backgroundColor: AppTheme.primary,
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         duration: const Duration(seconds: 2),
                       ));
                     } : null,
@@ -654,7 +674,7 @@ class _ProductoSheetState extends State<_ProductoSheet> {
   }
 
   Widget _placeholder({double w = 120, double h = 120}) => Container(
-    width: w, height: h, color: const Color(0xFFF0F0F0),
-    child: const Icon(Icons.image, color: Colors.grey),
-  );
+        width: w, height: h, color: const Color(0xFFF0F0F0),
+        child: const Icon(Icons.image, color: Colors.grey),
+      );
 }

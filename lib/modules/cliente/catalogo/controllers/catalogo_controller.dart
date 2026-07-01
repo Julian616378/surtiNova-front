@@ -3,8 +3,10 @@ import '../models/categoria_model.dart';
 import '../models/producto_model.dart';
 import '../services/catalogo_service.dart';
 
+
 class CatalogoController extends ChangeNotifier {
   final CatalogoService _service = CatalogoService();
+  
 
   List<CategoriaModel> categorias         = [];
   List<ProductoModel>  productos          = [];

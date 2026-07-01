@@ -29,42 +29,46 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       final response = await ApiService.post(ApiConstants.login, {
-        'correo':    _emailCtrl.text.trim(),
+        'correo':   _emailCtrl.text.trim(),
         'password': _passCtrl.text,
       });
 
-      final token = response.data['token'] as String;
-final rol = response.data['usuario']['rol'] as String;
+      final token    = response.data['token'] as String;
+      final usuario  = response.data['usuario'] as Map<String, dynamic>;
+      debugPrint('>>> USUARIO LOGIN: $usuario'); 
+      final rol      = usuario['rol'] as String;
+      // Ajusta el nombre del campo si tu API usa otro (ej: 'id_tienda', 'tienda_id', 'idTienda')
+      final idTienda = (usuario['id_tienda'] ?? usuario['idTienda'] ?? 0) as int;
 
-await StorageService.saveToken(token);
-await StorageService.saveRole(rol);
+      await StorageService.saveToken(token);
+      await StorageService.saveRole(rol);
 
-if (!mounted) return;
+      if (!mounted) return;
 
-switch (rol.toLowerCase()) {
-  case 'admin':
-    Navigator.pushReplacementNamed(context, '/admin-dashboard');
-    break;
+      switch (rol.toLowerCase()) {
+        case 'admin':
+          Navigator.pushReplacementNamed(context, '/admin-dashboard');
+          break;
 
-  case 'asesor':
-    Navigator.pushReplacementNamed(context, '/asesor-dashboard');
-    break;
+        case 'asesor':
+          Navigator.pushReplacementNamed(context, '/asesor-dashboard');
+          break;
 
-  case 'cliente':
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) => CatalogoView(
-          token: token,
-        ),
-      ),
-    );
-    break;
+        case 'cliente':
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => CatalogoView(
+                token: token,
+                idTienda: idTienda,
+              ),
+            ),
+          );
+          break;
 
-  default:
-    Navigator.pushReplacementNamed(context, '/login');
-
-}
+        default:
+          Navigator.pushReplacementNamed(context, '/login');
+      }
     } on DioException catch (e) {
       setState(() {
         _error = e.response?.data['message'] ?? 'Error de conexión';
@@ -92,7 +96,6 @@ switch (rol.toLowerCase()) {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Ícono
                 const Icon(Icons.storefront_rounded, size: 72, color: AppColors.primary),
                 const SizedBox(height: 16),
                 const Text('Bienvenido', style: AppTextStyles.heading, textAlign: TextAlign.center),
@@ -100,7 +103,6 @@ switch (rol.toLowerCase()) {
                 const Text('Ingresa tus credenciales', style: AppTextStyles.subheading, textAlign: TextAlign.center),
                 const SizedBox(height: 36),
 
-                // Email
                 TextFormField(
                   controller: _emailCtrl,
                   keyboardType: TextInputType.emailAddress,
@@ -116,7 +118,6 @@ switch (rol.toLowerCase()) {
                 ),
                 const SizedBox(height: AppDimensions.paddingM),
 
-                // Contraseña
                 TextFormField(
                   controller: _passCtrl,
                   obscureText: _obscurePass,
@@ -136,7 +137,6 @@ switch (rol.toLowerCase()) {
                 ),
                 const SizedBox(height: AppDimensions.paddingM),
 
-                // Error de API
                 if (_error != null)
                   Container(
                     padding: const EdgeInsets.all(AppDimensions.paddingM),
@@ -150,7 +150,6 @@ switch (rol.toLowerCase()) {
 
                 const SizedBox(height: AppDimensions.paddingL),
 
-                // Botón
                 ElevatedButton(
                   onPressed: _loading ? null : _login,
                   child: _loading
